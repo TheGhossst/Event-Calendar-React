@@ -4,12 +4,14 @@ import { Sidebar } from "./components/Sidebar"
 
 export function App() {
   return (
-    <div className="flex">
+    <div>
       <Navbar />
-      <Sidebar />
-      <div className="ml-64 w-full">
-        <Calendar />
+      <div className="flex">
+        <Sidebar />
+        <div className="ml-64 w-full">
+          <Calendar />
+        </div>
       </div>
-    </div>
+    </div >
   )
 }
