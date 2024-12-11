@@ -95,6 +95,13 @@ export function Calendar() {
           </Button>
         </div>
       </div>
+      <Input
+        type="text"
+        placeholder="Filter events..."
+        value={filterKeyword}
+        onChange={(e) => setFilterKeyword(e.target.value)}
+        className="my-6"
+      />
       <CalendarGrid
         currentDate={currentDate}
         events={filteredEvents}
@@ -112,13 +119,6 @@ export function Calendar() {
           events={events}
         />
       )}
-      <Input
-        type="text"
-        placeholder="Filter events..."
-        value={filterKeyword}
-        onChange={(e) => setFilterKeyword(e.target.value)}
-        className="my-6"
-      />
       <EventList
         events={filteredEvents.filter(event =>
           new Date(event.startTime).toDateString() === selectedDate?.toDateString()
