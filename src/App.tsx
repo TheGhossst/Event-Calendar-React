@@ -1,17 +1,11 @@
 import { Navbar } from "./components/NavBar"
 import { Calendar } from "./components/Calendar"
-import { Sidebar } from "./components/Sidebar"
 
 export function App() {
   return (
-    <div>
+    <div className="flex flex-col">
       <Navbar />
-      <div className="flex">
-        <Sidebar />
-        <div className="ml-64 w-full">
-          <Calendar />
-        </div>
-      </div>
+      <Calendar />
     </div >
   )
 }
