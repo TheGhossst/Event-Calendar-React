@@ -4,6 +4,7 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
 import { Alert, AlertDescription } from './ui/alert'
+import { DateTimePicker } from './DateTimePicker.tsx'
 import { Event } from '../types/event'
 
 interface EventModalProps {
@@ -28,23 +29,23 @@ export default function EventModal({
   events
 }: EventModalProps) {
   const [name, setName] = useState('')
-  const [startTime, setStartTime] = useState('')
-  const [endTime, setEndTime] = useState('')
+  const [startTime, setStartTime] = useState<Date>(new Date())
+  const [endTime, setEndTime] = useState<Date>(new Date())
   const [description, setDescription] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (selectedEvent) {
       setName(selectedEvent.name)
-      setStartTime(selectedEvent.startTime)
-      setEndTime(selectedEvent.endTime)
+      setStartTime(new Date(selectedEvent.startTime))
+      setEndTime(new Date(selectedEvent.endTime))
       setDescription(selectedEvent.description || '')
     } else {
       const defaultStart = new Date(selectedDate)
       defaultStart.setHours(9, 0, 0, 0)
       setName('')
-      setStartTime(defaultStart.toISOString().slice(0, 16))
-      setEndTime(new Date(defaultStart.getTime() + 60 * 60 * 1000).toISOString().slice(0, 16))
+      setStartTime(defaultStart)
+      setEndTime(new Date(defaultStart.getTime() + 60 * 60 * 1000))
       setDescription('')
     }
     setError(null)
@@ -61,15 +62,16 @@ export default function EventModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const newStart = new Date(startTime)
-    const newEnd = new Date(endTime)
 
-    if (newStart >= newEnd) {
+    const startDateTime = startTime.getTime()
+    const endDateTime = endTime.getTime()
+
+    if (startDateTime >= endDateTime) {
       setError('End time must be after start time')
       return
     }
 
-    if (checkOverlap(newStart, newEnd)) {
+    if (checkOverlap(startTime, endTime)) {
       setError('This event overlaps with an existing event')
       return
     }
@@ -77,8 +79,8 @@ export default function EventModal({
     const event: Event = {
       id: selectedEvent ? selectedEvent.id : Date.now().toString(),
       name,
-      startTime,
-      endTime,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
       description
     }
     if (selectedEvent) {
@@ -95,6 +97,11 @@ export default function EventModal({
     }
   }
 
+  const handleDateTimeChange = (start: Date, end: Date) => {
+    setStartTime(start)
+    setEndTime(end)
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -108,17 +115,10 @@ export default function EventModal({
             onChange={(e) => setName(e.target.value)}
             required
           />
-          <Input
-            type="datetime-local"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            required
-          />
-          <Input
-            type="datetime-local"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            required
+          <DateTimePicker
+            onRangeChange={handleDateTimeChange}
+            initialStartDate={startTime}
+            initialEndDate={endTime}
           />
           <Textarea
             placeholder="Description (optional)"
