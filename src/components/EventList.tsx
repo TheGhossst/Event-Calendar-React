@@ -11,7 +11,7 @@ export default function EventList({ events, onEditEvent }: EventListProps) {
     <div className="mt-4">
       <h2 className="text-xl font-bold mb-2">Events</h2>
       {events.length === 0 ? (
-        <p>No events for this day.</p>
+        <p>No events today.</p>
       ) : (
         <ul className="space-y-2">
           {events.map(event => (

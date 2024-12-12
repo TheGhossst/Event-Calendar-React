@@ -4,8 +4,9 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Textarea } from './ui/textarea'
 import { Alert, AlertDescription } from './ui/alert'
-import { DateTimePicker } from './DateTimePicker.tsx'
+import { DateTimePicker } from './DateTimePicker'
 import { Event } from '../types/event'
+import { isAfter, isBefore } from 'date-fns'
 
 interface EventModalProps {
   isOpen: boolean
@@ -56,17 +57,17 @@ export default function EventModal({
       if (selectedEvent && event.id === selectedEvent.id) return false
       const eventStart = new Date(event.startTime)
       const eventEnd = new Date(event.endTime)
-      return (newStart < eventEnd && newEnd > eventStart)
+      return (
+        (isBefore(newStart, eventEnd) && isAfter(newEnd, eventStart)) ||
+        (isBefore(eventStart, newEnd) && isAfter(eventEnd, newStart))
+      )
     })
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const startDateTime = startTime.getTime()
-    const endDateTime = endTime.getTime()
-
-    if (startDateTime >= endDateTime) {
+    if (isAfter(startTime, endTime)) {
       setError('End time must be after start time')
       return
     }
@@ -100,6 +101,7 @@ export default function EventModal({
   const handleDateTimeChange = (start: Date, end: Date) => {
     setStartTime(start)
     setEndTime(end)
+    setError(null)
   }
 
   return (
@@ -143,4 +145,3 @@ export default function EventModal({
     </Dialog>
   )
 }
-

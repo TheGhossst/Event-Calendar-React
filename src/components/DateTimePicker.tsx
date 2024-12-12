@@ -1,7 +1,5 @@
-'use client'
-
 import { useState, useEffect } from 'react'
-import { format, parse, isAfter } from 'date-fns'
+import { format, isAfter, isBefore, setHours, setMinutes } from 'date-fns'
 import { Calendar } from '@/components/ui/calendar'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,47 +13,67 @@ interface DateTimePickerProps {
 }
 
 export function DateTimePicker({ onRangeChange, initialStartDate, initialEndDate }: DateTimePickerProps) {
-  const [startDate, setStartDate] = useState<Date | undefined>(initialStartDate || new Date())
-  const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate || new Date())
-  const [startTime, setStartTime] = useState(format(initialStartDate || new Date(), 'HH:mm'))
-  const [endTime, setEndTime] = useState(format(initialEndDate || new Date(), 'HH:mm'))
+  const [startDate, setStartDate] = useState<Date>(initialStartDate || new Date())
+  const [endDate, setEndDate] = useState<Date>(initialEndDate || new Date())
+  const [startTime, setStartTime] = useState(format(startDate, 'HH:mm'))
+  const [endTime, setEndTime] = useState(format(endDate, 'HH:mm'))
 
   useEffect(() => {
     if (initialStartDate) setStartDate(initialStartDate)
     if (initialEndDate) setEndDate(initialEndDate)
   }, [initialStartDate, initialEndDate])
 
+  const updateDateTime = (date: Date, time: string): Date => {
+    const [hours, minutes] = time.split(':').map(Number)
+    return setMinutes(setHours(date, hours), minutes)
+  }
+
   const handleStartDateSelect = (date: Date | undefined) => {
-    setStartDate(date)
-    if (date && endDate && isAfter(date, endDate)) {
-      setEndDate(date)
+    if (!date) return
+    const newStartDate = updateDateTime(date, startTime)
+    setStartDate(newStartDate)
+    if (isAfter(newStartDate, endDate)) {
+      setEndDate(newStartDate)
+      onRangeChange(newStartDate, newStartDate)
+    } else {
+      onRangeChange(newStartDate, endDate)
     }
-    updateRangeChange(date, endDate)
   }
 
   const handleEndDateSelect = (date: Date | undefined) => {
-    if (date && startDate && isAfter(startDate, date)) {
-      setEndDate(startDate)
+    if (!date) return
+    const newEndDate = updateDateTime(date, endTime)
+    setEndDate(newEndDate)
+    if (isBefore(newEndDate, startDate)) {
+      setStartDate(newEndDate)
+      onRangeChange(newEndDate, newEndDate)
     } else {
-      setEndDate(date)
+      onRangeChange(startDate, newEndDate)
     }
-    updateRangeChange(startDate, date)
   }
 
-  const handleTimeChange = (value: string, setter: React.Dispatch<React.SetStateAction<string>>, isStart: boolean) => {
-    setter(value)
+  const handleTimeChange = (value: string, isStart: boolean) => {
     const date = isStart ? startDate : endDate
-    if (date) {
-      const newDate = parse(`${format(date, 'yyyy-MM-dd')} ${value}`, 'yyyy-MM-dd HH:mm', new Date())
-      updateRangeChange(isStart ? newDate : startDate, isStart ? endDate : newDate)
-    }
-  }
+    const newDate = updateDateTime(date, value)
 
-  const updateRangeChange = (start: Date | undefined, end: Date | undefined) => {
-    if (start && end) {
-      const startWithTime = parse(`${format(start, 'yyyy-MM-dd')} ${startTime}`, 'yyyy-MM-dd HH:mm', new Date())
-      const endWithTime = parse(`${format(end, 'yyyy-MM-dd')} ${endTime}`, 'yyyy-MM-dd HH:mm', new Date())
-      onRangeChange(startWithTime, endWithTime)
+    if (isStart) {
+      setStartTime(value)
+      setStartDate(newDate)
+      if (isAfter(newDate, endDate)) {
+        setEndDate(newDate)
+        onRangeChange(newDate, newDate)
+      } else {
+        onRangeChange(newDate, endDate)
+      }
+    } else {
+      setEndTime(value)
+      setEndDate(newDate)
+      if (isBefore(newDate, startDate)) {
+        setStartDate(newDate)
+        onRangeChange(newDate, newDate)
+      } else {
+        onRangeChange(startDate, newDate)
+      }
     }
   }
 
@@ -66,7 +84,7 @@ export function DateTimePicker({ onRangeChange, initialStartDate, initialEndDate
         <div className="flex space-x-2">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline">{startDate ? format(startDate, 'PP') : 'Pick a date'}</Button>
+              <Button variant="outline">{format(startDate, 'PP')}</Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
               <Calendar mode="single" selected={startDate} onSelect={handleStartDateSelect} initialFocus />
@@ -76,7 +94,7 @@ export function DateTimePicker({ onRangeChange, initialStartDate, initialEndDate
             id="start-time"
             type="time"
             value={startTime}
-            onChange={(e) => handleTimeChange(e.target.value, setStartTime, true)}
+            onChange={(e) => handleTimeChange(e.target.value, true)}
           />
         </div>
       </div>
@@ -85,7 +103,7 @@ export function DateTimePicker({ onRangeChange, initialStartDate, initialEndDate
         <div className="flex space-x-2">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline">{endDate ? format(endDate, 'PP') : 'Pick a date'}</Button>
+              <Button variant="outline">{format(endDate, 'PP')}</Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
               <Calendar mode="single" selected={endDate} onSelect={handleEndDateSelect} initialFocus />
@@ -95,7 +113,7 @@ export function DateTimePicker({ onRangeChange, initialStartDate, initialEndDate
             id="end-time"
             type="time"
             value={endTime}
-            onChange={(e) => handleTimeChange(e.target.value, setEndTime, false)}
+            onChange={(e) => handleTimeChange(e.target.value, false)}
           />
         </div>
       </div>
