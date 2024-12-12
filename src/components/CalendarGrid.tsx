@@ -75,15 +75,11 @@ export default function CalendarGrid({ currentDate, events, onDateClick, onEvent
             key={index}
             onClick={() => onDateClick(day)}
             variant="outline"
-            className={`h-24 ${
-              isToday(day) ? 'bg-blue-100 hover:bg-blue-200' : ''
-            } ${
-              !isCurrentMonth(day) ? 'text-gray-400' : ''
-            } ${
-              day.getDay() === 0 || day.getDay() === 6 ? 'bg-gray-100' : ''
-            } ${
-              isOver ? 'bg-green-100' : ''
-            }`}
+            className={`h-24 ${isToday(day) ? 'bg-blue-100 hover:bg-blue-200' : ''
+              } ${!isCurrentMonth(day) ? 'text-gray-400' : ''
+              } ${day.getDay() === 0 || day.getDay() === 6 ? 'bg-gray-100' : ''
+              } ${isOver ? 'bg-green-100' : ''
+              }`}
             ref={drop}
           >
             <div className="flex flex-col h-full w-full">

@@ -1,50 +1,65 @@
-# React + TypeScript + Vite
+#  Dynamic Event Calendar Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A feature-rich calendar application built with React, offering intuitive event management and a sleek user interface.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Monthly Calendar View**: Navigate through months with ease.
+- **Event Management**: Add, edit, and delete events effortlessly.
+- **Drag and Drop**: Reschedule events by dragging them to different dates.
+- **Time Conflict Detection**: Alerts for overlapping events when scheduling or rescheduling.
+- **Event Filtering**: Search and filter events by keywords.
+- **Responsive Design**: Fully responsive layout for various screen sizes.
+- **Data Persistence**: Events are saved in local storage for data retention.
+- **Export Functionality**: Export events for the current month as a JSON file.
 
-## Expanding the ESLint configuration
+## Running the App Locally
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Follow these steps to run the app on your local machine:
 
-- Configure the top-level `parserOptions` property like this:
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/TheGhossst/Event-Calendar-React
+   cd Event-Caldendar-React
+   ```
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+2. **Install dependencies**:
+   Make sure you have Node.js and npm installed on your machine. Then, run:
+   ```bash
+   npm i
+   ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+3. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+  Open the link in your browser to access the app.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## Features in Detail
+
+### Event Management
+- **Add Event**: Click on a date to create a new event. Provide event details like title, description, and time.
+- **Edit Event**: Click on an existing event to update its details.
+- **Delete Event**: Remove an event by selecting it and clicking "Delete".
+
+### Drag and Drop
+Drag events across dates to reschedule them seamlessly. The app will automatically update the event details.
+
+### Time Conflict Detection
+Receive an alert if you attempt to schedule overlapping events, ensuring efficient time management.
+
+### Event Filtering
+Use the search bar to find events by title or keywords, helping you quickly locate specific events.
+
+### Export Functionality
+Export all events for the currently selected month as a JSON file for external use or backup.
+
+## Technologies Used
+
+- **React**: Frontend framework for building user interfaces.
+- **React-DnD**: For implementing drag-and-drop functionality.
+- **CSS/Tailwind**: For styling the application.
+- **LocalStorage**: For persisting user data locally.
+
+
