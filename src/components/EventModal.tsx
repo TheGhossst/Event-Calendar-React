@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
@@ -6,7 +6,7 @@ import { Textarea } from './ui/textarea'
 import { Alert, AlertDescription } from './ui/alert'
 import { DateTimePicker } from './DateTimePicker'
 import { Event } from '../types/event'
-import { isAfter, isBefore } from 'date-fns'
+import { isEqual, isBefore, isAfter, parseISO } from 'date-fns'
 
 interface EventModalProps {
   isOpen: boolean
@@ -38,8 +38,8 @@ export default function EventModal({
   useEffect(() => {
     if (selectedEvent) {
       setName(selectedEvent.name)
-      setStartTime(new Date(selectedEvent.startTime))
-      setEndTime(new Date(selectedEvent.endTime))
+      setStartTime(parseISO(selectedEvent.startTime))
+      setEndTime(parseISO(selectedEvent.endTime))
       setDescription(selectedEvent.description || '')
     } else {
       const defaultStart = new Date(selectedDate)
@@ -55,11 +55,12 @@ export default function EventModal({
   const checkOverlap = (newStart: Date, newEnd: Date) => {
     return events.some(event => {
       if (selectedEvent && event.id === selectedEvent.id) return false
-      const eventStart = new Date(event.startTime)
-      const eventEnd = new Date(event.endTime)
+      const eventStart = parseISO(event.startTime)
+      const eventEnd = parseISO(event.endTime)
       return (
         (isBefore(newStart, eventEnd) && isAfter(newEnd, eventStart)) ||
-        (isBefore(eventStart, newEnd) && isAfter(eventEnd, newStart))
+        isEqual(newStart, eventStart) ||
+        isEqual(newEnd, eventEnd)
       )
     })
   }
@@ -67,7 +68,7 @@ export default function EventModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (isAfter(startTime, endTime)) {
+    if (isAfter(startTime, endTime) || isEqual(startTime, endTime)) {
       setError('End time must be after start time')
       return
     }

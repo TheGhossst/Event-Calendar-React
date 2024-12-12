@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { format, isAfter, isBefore, setHours, setMinutes } from 'date-fns'
+import { format, parse, isAfter, isBefore, setHours, setMinutes } from 'date-fns'
 import { Calendar } from '@/components/ui/calendar'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,8 +15,8 @@ interface DateTimePickerProps {
 export function DateTimePicker({ onRangeChange, initialStartDate, initialEndDate }: DateTimePickerProps) {
   const [startDate, setStartDate] = useState<Date>(initialStartDate || new Date())
   const [endDate, setEndDate] = useState<Date>(initialEndDate || new Date())
-  const [startTime, setStartTime] = useState(format(startDate, 'HH:mm'))
-  const [endTime, setEndTime] = useState(format(endDate, 'HH:mm'))
+  const [startTime, setStartTime] = useState(format(startDate, 'hh:mm a'))
+  const [endTime, setEndTime] = useState(format(endDate, 'hh:mm a'))
 
   useEffect(() => {
     if (initialStartDate) setStartDate(initialStartDate)
@@ -24,8 +24,8 @@ export function DateTimePicker({ onRangeChange, initialStartDate, initialEndDate
   }, [initialStartDate, initialEndDate])
 
   const updateDateTime = (date: Date, time: string): Date => {
-    const [hours, minutes] = time.split(':').map(Number)
-    return setMinutes(setHours(date, hours), minutes)
+    const parsedTime = parse(time, 'hh:mm a', new Date())
+    return setMinutes(setHours(date, parsedTime.getHours()), parsedTime.getMinutes())
   }
 
   const handleStartDateSelect = (date: Date | undefined) => {
@@ -93,8 +93,8 @@ export function DateTimePicker({ onRangeChange, initialStartDate, initialEndDate
           <Input
             id="start-time"
             type="time"
-            value={startTime}
-            onChange={(e) => handleTimeChange(e.target.value, true)}
+            value={format(startDate, 'HH:mm')}
+            onChange={(e) => handleTimeChange(format(parse(e.target.value, 'HH:mm', new Date()), 'hh:mm a'), true)}
           />
         </div>
       </div>
@@ -112,8 +112,8 @@ export function DateTimePicker({ onRangeChange, initialStartDate, initialEndDate
           <Input
             id="end-time"
             type="time"
-            value={endTime}
-            onChange={(e) => handleTimeChange(e.target.value, false)}
+            value={format(endDate, 'HH:mm')}
+            onChange={(e) => handleTimeChange(format(parse(e.target.value, 'HH:mm', new Date()), 'hh:mm a'), false)}
           />
         </div>
       </div>
