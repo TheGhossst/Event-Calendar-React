@@ -1,13 +1,16 @@
+import { useDrop } from 'react-dnd'
 import { Button } from './ui/button'
 import { Event } from '../types/event'
+import { DraggableEvent } from './DragEvent'
 
 interface CalendarGridProps {
   currentDate: Date
   events: Event[]
   onDateClick: (date: Date) => void
+  onEventReschedule: (event: Event, newDate: Date) => void
 }
 
-export default function CalendarGrid({ currentDate, events, onDateClick }: CalendarGridProps) {
+export default function CalendarGrid({ currentDate, events, onDateClick, onEventReschedule }: CalendarGridProps) {
   const getCalendarDays = (date: Date) => {
     const year = date.getFullYear()
     const month = date.getMonth()
@@ -54,32 +57,46 @@ export default function CalendarGrid({ currentDate, events, onDateClick }: Calen
       {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
         <div key={day} className="text-center font-bold p-2">{day}</div>
       ))}
-      {calendarDays.map((day, index) => (
-        <Button
-          key={index}
-          onClick={() => onDateClick(day)}
-          variant="outline"
-          className={`h-24 ${
-            isToday(day) ? 'bg-blue-100 hover:bg-blue-200' : ''
-          } ${
-            !isCurrentMonth(day) ? 'text-gray-400' : ''
-          } ${
-            day.getDay() === 0 || day.getDay() === 6 ? 'bg-gray-100' : ''
-          }`}
-        >
-          <div className="flex flex-col h-full w-full">
-            <span className="text-sm">{day.getDate()}</span>
-            <div className="flex-grow overflow-y-auto">
-              {getEventsForDate(day).map(event => (
-                <div key={event.id} className="text-xs bg-blue-500 text-white rounded px-1 my-1 truncate">
-                  {event.name}
-                </div>
-              ))}
+      {calendarDays.map((day, index) => {
+        const [{ isOver }, drop] = useDrop(() => ({
+          accept: 'EVENT',
+          drop: (item: { event: Event }) => {
+            const newDate = new Date(day)
+            newDate.setHours(0, 0, 0, 0)
+            onEventReschedule(item.event, newDate)
+          },
+          collect: (monitor) => ({
+            isOver: !!monitor.isOver(),
+          }),
+        }))
+
+        return (
+          <Button
+            key={index}
+            onClick={() => onDateClick(day)}
+            variant="outline"
+            className={`h-24 ${
+              isToday(day) ? 'bg-blue-100 hover:bg-blue-200' : ''
+            } ${
+              !isCurrentMonth(day) ? 'text-gray-400' : ''
+            } ${
+              day.getDay() === 0 || day.getDay() === 6 ? 'bg-gray-100' : ''
+            } ${
+              isOver ? 'bg-green-100' : ''
+            }`}
+            ref={drop}
+          >
+            <div className="flex flex-col h-full w-full">
+              <span className="text-sm">{day.getDate()}</span>
+              <div className="flex-grow overflow-y-auto">
+                {getEventsForDate(day).map(event => (
+                  <DraggableEvent key={event.id} event={event} />
+                ))}
+              </div>
             </div>
-          </div>
-        </Button>
-      ))}
+          </Button>
+        )
+      })}
     </div>
   )
 }
-

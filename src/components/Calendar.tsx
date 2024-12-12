@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import CalendarGrid from './CalendarGrid'
 import EventModal from './EventModal'
 import EventList from './EventList'
@@ -55,6 +57,20 @@ export function Calendar() {
     setIsModalOpen(false)
   }
 
+  const handleEventReschedule = (event: Event, newDate: Date) => {
+    const oldStartDate = new Date(event.startTime)
+    const oldEndDate = new Date(event.endTime)
+    const timeDiff = newDate.getTime() - oldStartDate.setHours(0, 0, 0, 0)
+
+    const updatedEvent: Event = {
+      ...event,
+      startTime: new Date(oldStartDate.getTime() + timeDiff).toISOString(),
+      endTime: new Date(oldEndDate.getTime() + timeDiff).toISOString(),
+    }
+
+    setEvents(prevEvents => prevEvents.map(e => e.id === event.id ? updatedEvent : e))
+  }
+
   const handleExportEvents = () => {
     const eventsToExport = events.filter(event => {
       const eventDate = new Date(event.startTime)
@@ -77,57 +93,60 @@ export function Calendar() {
   )
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">
-          {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-        </h1>
-        <div className="flex items-center space-x-2">
-          <Button onClick={handlePrevMonth} variant="outline" size="icon">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button onClick={handleNextMonth} variant="outline" size="icon">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button onClick={handleExportEvents} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export Events
-          </Button>
+    <DndProvider backend={HTML5Backend}>
+      <div className="container mx-auto p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">
+            {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+          </h1>
+          <div className="flex items-center space-x-2">
+            <Button onClick={handlePrevMonth} variant="outline" size="icon">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button onClick={handleNextMonth} variant="outline" size="icon">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button onClick={handleExportEvents} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export Events
+            </Button>
+          </div>
         </div>
-      </div>
-      <Input
-        type="text"
-        placeholder="Filter events..."
-        value={filterKeyword}
-        onChange={(e) => setFilterKeyword(e.target.value)}
-        className="my-6"
-      />
-      <CalendarGrid
-        currentDate={currentDate}
-        events={filteredEvents}
-        onDateClick={handleDateClick}
-      />
-      {selectedDate && (
-        <EventModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onAddEvent={handleAddEvent}
-          onEditEvent={handleEditEvent}
-          onDeleteEvent={handleDeleteEvent}
-          selectedDate={selectedDate}
-          selectedEvent={selectedEvent}
-          events={events}
+        <Input
+          type="text"
+          placeholder="Filter events..."
+          value={filterKeyword}
+          onChange={(e) => setFilterKeyword(e.target.value)}
+          className="my-6"
         />
-      )}
-      <EventList
-        events={filteredEvents.filter(event =>
-          new Date(event.startTime).toDateString() === selectedDate?.toDateString()
+        <CalendarGrid
+          currentDate={currentDate}
+          events={filteredEvents}
+          onDateClick={handleDateClick}
+          onEventReschedule={handleEventReschedule}
+        />
+        {selectedDate && (
+          <EventModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onAddEvent={handleAddEvent}
+            onEditEvent={handleEditEvent}
+            onDeleteEvent={handleDeleteEvent}
+            selectedDate={selectedDate}
+            selectedEvent={selectedEvent}
+            events={events}
+          />
         )}
-        onEditEvent={(event) => {
-          setSelectedEvent(event)
-          setIsModalOpen(true)
-        }}
-      />
-    </div>
+        <EventList
+          events={filteredEvents.filter(event =>
+            new Date(event.startTime).toDateString() === selectedDate?.toDateString()
+          )}
+          onEditEvent={(event) => {
+            setSelectedEvent(event)
+            setIsModalOpen(true)
+          }}
+        />
+      </div>
+    </DndProvider>
   )
 }
